@@ -137,7 +137,7 @@ class V2RayService {
       _logger.info('Verifying V2Ray core is responsive...');
       try {
         final version = await _v2rayPlugin.getCoreVersion().timeout(const Duration(seconds: 3), onTimeout: () => '');
-        if (version != null && version.isNotEmpty) {
+        if (version.isNotEmpty) {
           _logger.info('✓ V2Ray core version: $version');
         } else {
           _logger.warning('Could not retrieve core version (may not be critical)');
@@ -229,7 +229,6 @@ class V2RayService {
       return false;
     }
 
-
     try {
       // Use a slightly longer timeout to prevent premature "stuck" declarations
       return await _runConnectLogic(server, customDns, proxyOnly, useSystemDns).timeout(
@@ -270,7 +269,7 @@ class V2RayService {
       throw Exception('Connection already in progress, please wait');
     }
     _isConnectInProgress = true;
-    
+
     try {
       return await _runConnectLogicInternal(server, customDns, proxyOnly, useSystemDns);
     } finally {
@@ -449,15 +448,15 @@ class V2RayService {
       if (customDns != null && customDns.isNotEmpty) {
         effectiveDns.addAll(customDns.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty));
         _logger.info('Using Custom DNS: $effectiveDns');
-      } 
-      
+      }
+
       // If no custom DNS, or if we want to append system DNS as fallback (optional strategy)
       // For privacy/leak protection, usually we prefer Custom DNS ONLY if specified.
       if (effectiveDns.isEmpty) {
         if (systemDnsServers.isNotEmpty) {
-           effectiveDns.addAll(systemDnsServers);
+          effectiveDns.addAll(systemDnsServers);
         } else {
-           effectiveDns.addAll(["8.8.8.8", "1.1.1.1"]);
+          effectiveDns.addAll(["8.8.8.8", "1.1.1.1"]);
         }
         _logger.info('Using System/Default DNS: $effectiveDns');
       }
@@ -558,7 +557,7 @@ class V2RayService {
     try {
       final coreVersion = await _v2rayPlugin.getCoreVersion().timeout(const Duration(seconds: 3), onTimeout: () => '');
 
-      if (coreVersion != null && coreVersion.isNotEmpty) {
+      if (coreVersion.isNotEmpty) {
         _logger.info('✓ V2Ray core is responsive. Version: $coreVersion');
       } else {
         _logger.warning('Could not verify core version, but continuing...');
@@ -689,13 +688,13 @@ class V2RayService {
 
     try {
       _logger.info('Enabling macOS system proxy (${mode.displayName} mode)...');
-      
+
       // Call native method with proxy mode argument
       const platform = MethodChannel('v2ray_dan');
       final result = await platform.invokeMethod('setSystemProxy', {
         'proxyMode': mode.name,
       });
-      
+
       if (result == true) {
         _logger.info('✓ System proxy enabled successfully');
       } else {
@@ -750,7 +749,7 @@ class V2RayService {
       _logger.info('Diagnostic 1/3: Fetching V2Ray core logs...');
       try {
         final coreLogs = await _v2rayPlugin.getLogs();
-        if (coreLogs != null && coreLogs.isNotEmpty) {
+        if (coreLogs.isNotEmpty) {
           _logger.info('V2Ray Core Logs (last ${coreLogs.length} entries):');
           // Log last 10 entries or all if less
           final logsToShow = coreLogs.length > 10 ? coreLogs.sublist(coreLogs.length - 10) : coreLogs;
@@ -768,7 +767,7 @@ class V2RayService {
       _logger.info('Diagnostic 2/3: Checking if V2Ray core is responsive...');
       try {
         final version = await _v2rayPlugin.getCoreVersion().timeout(const Duration(seconds: 3), onTimeout: () => '');
-        if (version != null && version.isNotEmpty) {
+        if (version.isNotEmpty) {
           _logger.info('✓ V2Ray core is responsive - Version: $version');
         } else {
           _logger.warning('V2Ray core version check returned empty');
