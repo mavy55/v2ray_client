@@ -768,7 +768,7 @@ class V2RayService {
       _logger.info('Diagnostic 2/3: Checking if V2Ray core is responsive...');
       try {
         final version = await _v2rayPlugin.getCoreVersion().timeout(const Duration(seconds: 3), onTimeout: () => '');
-        if (version.isNotEmpty) {
+        if (version != null && version.isNotEmpty) {
           _logger.info('✓ V2Ray core is responsive - Version: $version');
         } else {
           _logger.warning('V2Ray core version check returned empty');
