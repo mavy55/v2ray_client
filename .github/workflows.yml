@@ -1,13 +1,14 @@
 name: CI
 
 on:
-  push:
-    branches: ["**"]
-  pull_request:
-    branches: ["**"]
+  push: {}
+  pull_request: {}
+
+permissions:
+  contents: read
 
 concurrency:
-  group: "ci-${{ github.ref }}"
+  group: "ci-${{ github.ref_name }}"
   cancel-in-progress: true
 
 jobs:
@@ -22,6 +23,9 @@ jobs:
           - name: ios
             os: macos-latest
       fail-fast: false
+
+    env:
+      FLUTTER_CHANNEL: stable
 
     steps:
       - name: Checkout
@@ -38,8 +42,9 @@ jobs:
           path: |
             ~/.pub-cache
             ~/.pub-cache/bin
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          key: ${{ runner.os }}-pub-${{ matrix.name }}-${{ hashFiles('**/pubspec.lock') }}
           restore-keys: |
+            ${{ runner.os }}-pub-${{ matrix.name }}-
             ${{ runner.os }}-pub-
 
       - name: Install dependencies
@@ -65,14 +70,13 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ matrix.name }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
+            ${{ runner.os }}-gradle-${{ matrix.name }}-
             ${{ runner.os }}-gradle-
 
       - name: Build Android APK
         if: matrix.name == 'android'
-        env:
-          JAVA_HOME: /usr/lib/jvm/adoptopenjdk-11-hotspot
         run: flutter build apk --split-per-abi --release
 
       - name: Upload Android artifacts
@@ -86,10 +90,16 @@ jobs:
         if: matrix.name == 'ios'
         run: |
           flutter build ios --no-codesign --release
+          # zip the Runner.app so the artifact is uploaded as a single file
+          if [ -d "build/ios/iphoneos/Runner.app" ]; then
+            cd build/ios/iphoneos
+            zip -r Runner.app.zip Runner.app
+            cd -
+          fi
 
       - name: Upload iOS artifacts
         if: matrix.name == 'ios'
         uses: actions/upload-artifact@v4
         with:
           name: ios-archive
-          path: build/ios/iphoneos
+          path: build/ios/iphoneos/Runner.app.zip
